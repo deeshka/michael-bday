@@ -48,11 +48,11 @@
   .note .del:hover{border-color:var(--muted)}
   .note .del.confirm{background:#b00020;border-color:#b00020;color:#fff}
   .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
-  .rx{border:0;background:none;padding:4px 2px;font:600 13px Inter,sans-serif;color:var(--muted);cursor:pointer;line-height:1;
-    display:inline-flex;align-items:center;gap:6px}
-  .rx .emo{font-size:20px;transition:transform .15s}
-  .rx.on .num{color:#d62839}
+  .rx{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font:600 13px Inter,sans-serif;
+    color:var(--muted);cursor:pointer;line-height:1;display:inline-flex;align-items:center;gap:6px}
+  .rx .emo{font-size:15px;transition:transform .15s}
   .rx:active .emo{transform:scale(1.25)}
+  .rx.on{background:#fdecc8;border-color:var(--gold);color:var(--ink)}
   .rx:disabled{opacity:.7}
   .link{background:none;border:0;padding:4px 6px;font:600 13px Inter,sans-serif;color:var(--accent2);cursor:pointer}
   .bar .link{margin-left:auto}

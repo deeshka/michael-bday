@@ -48,9 +48,12 @@
   .note .del:hover{border-color:var(--muted)}
   .note .del.confirm{background:#b00020;border-color:#b00020;color:#fff}
   .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
-  .rx{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font:500 14px Inter,sans-serif;cursor:pointer;color:var(--ink);line-height:1.2}
-  .rx.on{background:#fdecc8;border-color:var(--gold)}
-  .rx:disabled{opacity:.6}
+  .rx{border:0;background:none;padding:4px 2px;font:600 13px Inter,sans-serif;color:var(--muted);cursor:pointer;line-height:1;
+    display:inline-flex;align-items:center;gap:6px}
+  .rx .emo{font-size:20px;transition:transform .15s}
+  .rx.on .num{color:#d62839}
+  .rx:active .emo{transform:scale(1.25)}
+  .rx:disabled{opacity:.7}
   .link{background:none;border:0;padding:4px 6px;font:600 13px Inter,sans-serif;color:var(--accent2);cursor:pointer}
   .bar .link{margin-left:auto}
   .toggle{display:block;padding:8px 0 0}
@@ -190,7 +193,7 @@ if (VIEW_ONLY) {
   $(".sub").textContent = "A few words from the people you've taught, inspired, and worked alongside.";
 }
 let store, myUid = null;
-const REACTIONS = [["heart","❤️"],["wow","🤩"],["party","🎉"]];
+const REACTIONS = [["heart","❤️"]];   // only the heart is shown (older 🤩/🎉 reactions stay saved but hidden)
 const MAX_WORDS = 75, MAX_CHARS = 800;
 let lastName = ""; try { lastName = localStorage.getItem("bday-name") || ""; } catch {}
 const rememberName = n => { lastName = n; try { localStorage.setItem("bday-name", n); } catch {} };
@@ -361,7 +364,7 @@ function updateExtras(id){
   for (const [kind, emoji] of REACTIONS) {
     const mine = reactions.filter(r => r.noteId === id && r.kind === kind);
     const b = parts.rx[kind];
-    b.textContent = mine.length ? `${emoji} ${mine.length}` : emoji;
+    b.replaceChildren(el("span", "emo", emoji), ...(mine.length ? [el("span", "num", String(mine.length))] : []));
     b.classList.toggle("on", mine.some(r => r.uid === myUid));
   }
   const rs = replies.filter(r => r.noteId === id).sort((a, b) => a.createdAt - b.createdAt);

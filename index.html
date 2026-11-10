@@ -271,6 +271,18 @@ if (sdk) {
   };
 }
 
+// ---------- Kindness filter ----------
+// Blocks slurs, profanity, harmful phrases and common disguises (capitals, repeated
+// letters, 1/!/@/$ swaps, f*ck, spaced-out letters). The same list is in the Firebase rules.
+const BAD_WORDS = new RegExp("((^|[^a-z])(f+[kc]+[i1!|*#]+n+[g9]+|f+[kc]+n+|[e3*#]+f+f+[i1!|*#]+n+[g9]+|[s5$]+h+[t7+]+|[b8]+[uv*#]+[l1|]+[l1|]+[s5$]+h+[i1!|*#]+[t7+]+|[a4@*#]+[s5$]+[s5$]+|[a4@*#]+[s5$]+[s5$]+[e3*#]+[s5$]+|[a4@*#]+r+[s5$]+[e3*#]+|d+[i1!|*#]+[ck]+[kc]+|d+[i1!|*#]+[ck]+[kc]+[s5$]+|[ck]+[o0*#]+[ck]+[kc]+|[ck]+[o0*#]+[ck]+[kc]+[s5$]+|p+r+[i1!|*#]+[ck]+[kc]+|p+r+[i1!|*#]+[ck]+[kc]+[s5$]+|p+[uv*#]+[s5$]+[s5$]+y+|p+[uv*#]+[s5$]+[s5$]+[i1!|*#]+[e3*#]+[s5$]+|h+[o0*#]+[e3*#]+|h+[o0*#]+[e3*#]+[s5$]+|[b8]+[o0*#]+[o0*#]+[b8]+[s5$]+|[t7+]+[i1!|*#]+[t7+]+[s5$]+|[t7+]+[i1!|*#]+[t7+]+[t7+]+[i1!|*#]+[e3*#]+[s5$]+|h+[o0*#]+r+n+y+|[s5$]+[t7+]+f+[uv*#]+|[g9]+[t7+]+f+[o0*#]+|w+[t7+]+f+|[kc]+y+[s5$]+|[kc]+m+[s5$]+|m+f+|[s5$]+m+d+|f+m+[l1|]+|n+[e3*#]+[g9]+r+[o0*#]+[i1!|*#]+d+|[t7+]+r+[a4@*#]+n+n+[i1!|*#]+[e3*#]+[s5$]+|[s5$]+p+[i1!|*#]+[ck]+|[s5$]+p+[i1!|*#]+[ck]+[s5$]+|[ck]+h+[i1!|*#]+n+[kc]+|[ck]+h+[i1!|*#]+n+[kc]+[s5$]+|j+[a4@*#]+p+|j+[a4@*#]+p+[s5$]+|[ck]+[o0*#]+[o0*#]+n+|[ck]+[o0*#]+[o0*#]+n+[s5$]+|p+[a4@*#]+[kc]+[i1!|*#]+|p+[a4@*#]+[kc]+[i1!|*#]+[s5$]+|w+[o0*#]+p+|w+[o0*#]+p+[s5$]+|[ck]+h+[i1!|*#]+n+[a4@*#]+m+[a4@*#]+n+|h+[e3*#]+[i1!|*#]+[l1|]+[^a-z]+h+[i1!|*#]+[t7+]+[l1|]+[e3*#]+r+|[s5$]+[i1!|*#]+[e3*#]+[g9]+[^a-z]+h+[e3*#]+[i1!|*#]+[l1|]+|w+h+[i1!|*#]+[t7+]+[e3*#]+[^a-z]+p+[o0*#]+w+[e3*#]+r+|[kc]+[kc]+[kc]+|[kc]+[i1!|*#]+[l1|]+[l1|]+[^a-z]+y+[o0*#]+[uv*#]+r+[s5$]+[e3*#]+[l1|]+f+|[kc]+[i1!|*#]+[l1|]+[l1|]+[^a-z]+[uv*#]+r+[s5$]+[e3*#]+[l1|]+f+|[kc]+[i1!|*#]+[l1|]+[l1|]+[^a-z]+y+[o0*#]+[uv*#]+r+[^a-z]+[s5$]+[e3*#]+[l1|]+f+|[g9]+[o0*#]+[^a-z]+d+[i1!|*#]+[e3*#]+|h+[o0*#]+p+[e3*#]+[^a-z]+y+[o0*#]+[uv*#]+[^a-z]+d+[i1!|*#]+[e3*#]+|y+[o0*#]+[uv*#]+[^a-z]+[s5$]+h+[o0*#]+[uv*#]+[l1|]+d+[^a-z]+d+[i1!|*#]+[e3*#]+)([^a-z]|$)|(^|[^a-z])(f+[ck]+[kc]+|f+[uv*#]+[kc]+|f+v+[ck]+[kc]+|p+h+[uv*#]+[ck]+[kc]+|f+[uv*#]+q+|[s5$]+h+y+[t7+]+|[ck]+[uv*#]+n+[t7+]+|[kc]+[uv*#]+n+[t7+]+|[b8]+[i1!|*#]+[t7+]+[ck]+h+|[b8]+[i1!|*#]+[a4@*#]+[t7+]+[ck]+h+|[b8]+y+[t7+]+[ck]+h+|[a4@*#]+[s5$]+[s5$]+h+[o0*#]+[l1|]+[e3*#]+|[a4@*#]+r+[s5$]+[e3*#]+h+[o0*#]+[l1|]+[e3*#]+|d+[uv*#]+m+[b8]+[a4@*#]+[s5$]+[s5$]+|j+[a4@*#]+[ck]+[kc]+[a4@*#]+[s5$]+[s5$]+|[s5$]+m+[a4@*#]+r+[t7+]+[a4@*#]+[s5$]+[s5$]+|f+[a4@*#]+[t7+]+[a4@*#]+[s5$]+[s5$]+|[b8]+[a4@*#]+[s5$]+[t7+]+[a4@*#]+r+d+|d+[i1!|*#]+[ck]+[kc]+h+[e3*#]+[a4@*#]+d+|[ck]+[o0*#]+[ck]+[kc]+[s5$]+[uv*#]+[ck]+[kc]+[e3*#]+r+|[t7+]+w+[a4@*#]+[t7+]+|w+[a4@*#]+n+[kc]+|w+[a4@*#]+n+[kc]+[e3*#]+r+|d+[o0*#]+[uv*#]+[ck]+h+[e3*#]+|[s5$]+[l1|]+[uv*#]+[t7+]+|w+h+[o0*#]+r+[e3*#]+|j+[e3*#]+r+[kc]+[o0*#]+f+f+|d+[i1!|*#]+[l1|]+d+[o0*#]+|[b8]+[l1|]+[o0*#]+w+j+[o0*#]+[b8]+|h+[a4@*#]+n+d+j+[o0*#]+[b8]+|p+[o0*#]+r+n+|j+[i1!|*#]+z+z+|m+[i1!|*#]+[l1|]+f+|m+f+[e3*#]+r+|m+[o0*#]+f+[o0*#]+|f+[a4@*#]+[g9]+|d+y+[kc]+[e3*#]+|[t7+]+r+[a4@*#]+n+n+y+|[s5$]+h+[e3*#]+m+[a4@*#]+[l1|]+[e3*#]+|r+[e3*#]+[t7+]+[a4@*#]+r+d+|[s5$]+p+[a4@*#]+z+|[s5$]+p+[a4@*#]+[s5$]+[t7+]+[i1!|*#]+[ck]+|w+[e3*#]+[t7+]+[b8]+[a4@*#]+[ck]+[kc]+|[b8]+[e3*#]+[a4@*#]+n+[e3*#]+r+|[g9]+[o0*#]+[o0*#]+[kc]+|[kc]+[i1!|*#]+[kc]+[e3*#]+|[kc]+y+[kc]+[e3*#]+|j+[i1!|*#]+[g9]+[a4@*#]+[b8]+[o0*#]+[o0*#]+|r+[a4@*#]+[g9]+h+[e3*#]+[a4@*#]+d+|[t7+]+[o0*#]+w+[e3*#]+[l1|]+h+[e3*#]+[a4@*#]+d+|[s5$]+[a4@*#]+n+d+n+[i1!|*#]+[g9]+[g9]+[e3*#]+r+|r+[e3*#]+d+[s5$]+[kc]+[i1!|*#]+n+|h+[a4@*#]+[l1|]+f+[b8]+r+[e3*#]+[e3*#]+d+|n+[a4@*#]+z+[i1!|*#]+)|(f+[uv*#]+[ck]+[kc]+|[s5$]+h+[i1!|*#]+[t7+]+|n+[i1!|*#]+[g9]+[g9]+[e3*#]+r+|n+[i1!|*#]+[g9]+[g9]+[a4@*#]+|n+[i1!|*#]+[g9]+[g9]+[a4@*#]+z+|n+[i1!|*#]+[g9]+[g9]+[uv*#]+h+))");
+function isKind(text){
+  const t = (text || "").toLowerCase();
+  // "f u c k" / "f.u.c.k" -> "fuck"
+  const joined = t.replace(/(^|\s)((?:\S[\s.\-_~]+){2,}\S)(?=\s|$)/g, (m, a, b) => a + b.replace(/[\s.\-_~]+/g, ""));
+  return !BAD_WORDS.test(t) && !BAD_WORDS.test(joined);
+}
+const KIND_MSG = "Please keep it kind. Some words aren't allowed on this card.";
+
 // ---------- Small helpers ----------
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 // A button that asks "Tap again to delete" before running the action.
@@ -347,6 +359,7 @@ function buildNote(n){
     if (!name) return err.textContent = "Please add your name.";
     if (!t) return err.textContent = "Write a reply first.";
     if (wordCount(t) > MAX_WORDS) return err.textContent = `Please keep it to ${MAX_WORDS} words.`;
+    if (!isKind(name) || !isKind(t)) return err.textContent = KIND_MSG;
     send.disabled = true; send.textContent = "Sending…";
     try {
       await store.addReply(n.id, { name, text: t, fromMichael: VIEW_ONLY });
@@ -451,6 +464,7 @@ $("#submit").onclick = async () => {
   const name = $("#name").value.trim(), message = $("#message").value.trim();
   if (!name) return $("#err").textContent = "Please add your name.";
   if (!message && !photoData) return $("#err").textContent = "Add a message or a photo.";
+  if (!isKind(name) || !isKind(message)) return $("#err").textContent = KIND_MSG;
   const color = document.querySelector("input[name=color]:checked").value;
   $("#submit").disabled = true; $("#submit").textContent = "Posting…";
   try {

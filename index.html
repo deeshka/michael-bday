@@ -12,6 +12,7 @@
     --gold:#f3a712; --card:#fffdf9; --line:#eadfce;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none !important}
   body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);
     background-image:radial-gradient(#eadfce 1px,transparent 1px);background-size:22px 22px;min-height:100vh}
   header{text-align:center;padding:64px 20px 28px;position:relative}
@@ -46,6 +47,28 @@
     font:500 12px Inter,sans-serif;color:var(--muted);cursor:pointer}
   .note .del:hover{border-color:var(--muted)}
   .note .del.confirm{background:#b00020;border-color:#b00020;color:#fff}
+  .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+  .rx{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font:500 14px Inter,sans-serif;cursor:pointer;color:var(--ink);line-height:1.2}
+  .rx.on{background:#fdecc8;border-color:var(--gold)}
+  .rx:disabled{opacity:.6}
+  .link{background:none;border:0;padding:4px 6px;font:600 13px Inter,sans-serif;color:var(--accent2);cursor:pointer}
+  .bar .link{margin-left:auto}
+  .toggle{display:block;padding:8px 0 0}
+  .replies{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .reply{background:#f7f1e7;border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.4}
+  .reply.michael{background:#e6f1f7;border-left:3px solid var(--accent2)}
+  .reply .who{display:flex;align-items:center;gap:6px;margin-bottom:2px;font-size:13px}
+  .reply .rtext{white-space:pre-wrap;word-wrap:break-word}
+  .reply .del{margin-top:6px}
+  .badge{background:var(--accent2);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:600}
+  .reply-form{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .reply-form input,.reply-form textarea{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font:15px Inter,sans-serif;background:#fff}
+  .reply-form textarea{min-height:70px;resize:vertical}
+  .reply-form input:focus,.reply-form textarea:focus{outline:none;border-color:var(--accent2)}
+  .reply-foot{display:flex;justify-content:space-between;align-items:center}
+  .counter{font-size:12px;color:var(--muted)}
+  .counter.over{color:#b00020;font-weight:600}
+  .btn.small{padding:8px 16px;font-size:14px}
   @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}}
   .empty{column-span:all;text-align:center;color:var(--muted);font-family:Caveat,cursive;font-size:28px;padding:40px}
 
@@ -72,7 +95,18 @@
 
   #lightbox{background:transparent;box-shadow:none;width:auto;max-width:94vw}
   #lightbox img{max-width:94vw;max-height:88vh;border-radius:8px;display:block}
-  footer{text-align:center;color:var(--muted);font-size:13px;padding:0 20px 40px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:0 20px 84px}
+  footer .count{margin:0 0 6px;font-size:13px}
+  .sound{position:fixed;right:16px;bottom:16px;z-index:40;display:flex;align-items:center;gap:8px}
+  .sound-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--ink);color:#fff;cursor:pointer;
+    display:grid;place-items:center;box-shadow:0 6px 16px #0003}
+  .sound-btn .ic-on{display:none}
+  .sound-btn.playing .ic-on{display:block}
+  .sound-btn.playing .ic-off{display:none}
+  .sound-btn.playing{background:var(--accent2)}
+  .sound-prompt{border:0;background:#fff;color:var(--ink);font:600 13px Inter,sans-serif;padding:10px 14px;border-radius:999px;
+    box-shadow:0 6px 16px #0002;cursor:pointer;animation:nudge 2.4s ease-in-out infinite}
+  @keyframes nudge{50%{transform:translateX(-4px)}}
   canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 </style>
 </head>
@@ -89,14 +123,25 @@
   </div>
   <p class="sub">Leave a note, a memory, or a photo for Michael B. Horn. No sign-in needed — just write and post.</p>
   <button class="cta" id="openForm">Sign the card</button>
-  <div class="count" id="count"></div>
 </header>
 
 <div id="demoBanner" class="banner" hidden>Preview mode: messages are only saved in this browser. Add your Firebase settings (see README) to make the card shared.</div>
 
 <main class="wall" id="wall"><div class="empty">Loading messages…</div></main>
 
-<footer>Made with love</footer>
+<footer>
+  <div class="count" id="count"></div>
+  <div>Made with love</div>
+</footer>
+
+<!-- Birthday song: appears only if song.m4a or song.mp3 is uploaded next to index.html -->
+<div class="sound" id="sound" hidden>
+  <button type="button" class="sound-prompt" id="soundPrompt" hidden>Tap to play your birthday song</button>
+  <button type="button" class="sound-btn" id="soundBtn" aria-label="Play birthday song" aria-pressed="false">
+    <svg class="ic-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
+    <svg class="ic-on" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
+  </button>
+</div>
 
 <dialog id="formDialog">
   <form id="noteForm" onsubmit="return false">
@@ -142,89 +187,218 @@ const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toStri
 const VIEW_ONLY = new URLSearchParams(location.search).get("for") === "michael";
 if (VIEW_ONLY) {
   $("#openForm").remove();
-  $(".eyebrow").textContent = "from your friends, colleagues & students —";
   $(".sub").textContent = "A few words from the people you've taught, inspired, and worked alongside.";
 }
 let store, myUid = null;
+const REACTIONS = [["heart","❤️"],["wow","🤩"],["party","🎉"]];
+const MAX_WORDS = 75, MAX_CHARS = 800;
+let lastName = ""; try { lastName = localStorage.getItem("bday-name") || ""; } catch {}
+const rememberName = n => { lastName = n; try { localStorage.setItem("bday-name", n); } catch {} };
+const wordCount = t => t.trim().split(/\s+/).filter(Boolean).length;
+const toDate = v => v?.toDate?.() || (v ? new Date(v) : new Date());
 
 // ---------- Storage layer: Firebase (shared) or localStorage (preview) ----------
 // Each visitor gets an invisible anonymous ID (no sign-in screen). It is saved on their
-// notes, so only the same browser that posted a note can delete it.
+// notes, replies and reactions, so people can only delete their own.
+let sdk = null;
 if (firebaseConfig.apiKey) {
-  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-  const fs = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-  const au = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+  try {
+    sdk = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+    ]);
+  } catch (e) {
+    console.error("Could not load Firebase", e);
+    const b = $("#demoBanner");
+    b.textContent = "Couldn't connect to the card's database. Open the card from its GitHub link, or try another browser or network.";
+    b.hidden = false;
+    $("#wall").innerHTML = `<div class="empty">Messages couldn't load</div>`;
+    if ($("#openForm")) $("#openForm").remove();
+  }
+}
+if (sdk) {
+  const [{ initializeApp }, fs, au] = sdk;
   const app = initializeApp(firebaseConfig);
   const db = fs.getFirestore(app);
   const col = fs.collection(db, "messages");
-  if (!VIEW_ONLY) {
-    try { myUid = (await au.signInAnonymously(au.getAuth(app))).user.uid; }
-    catch (e) { console.error("Anonymous sign-in failed. Is it enabled in Firebase?", e); }
-  }
+  try { myUid = (await au.signInAnonymously(au.getAuth(app))).user.uid; }
+  catch (e) { console.error("Anonymous sign-in failed. Is it enabled in Firebase?", e); }
+  const need = () => { if (!myUid) throw new Error("Posting isn't set up yet. Please try again later."); };
+  const fail = e => console.error(e);
+  const fromSub = d => ({ id: d.id, noteId: d.ref.parent.parent.id, ...d.data(), createdAt: toDate(d.data().createdAt) });
   store = {
-    subscribe(cb){
+    subscribeNotes(cb){
+      // If nothing arrives in 12 seconds, say so instead of "Loading…" forever.
+      const slow = setTimeout(() => {
+        if (!notes.length) $("#wall").innerHTML = `<div class="empty">Still loading… Check your connection or refresh the page.</div>`;
+      }, 12000);
       fs.onSnapshot(fs.query(col, fs.orderBy("createdAt","desc")),
-        snap => cb(snap.docs.map(d => ({ id:d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.() || new Date() }))),
-        e => { $("#wall").innerHTML = `<div class="empty">Couldn't load messages</div>`; console.error(e); });
+        snap => { clearTimeout(slow); cb(snap.docs.map(d => ({ id:d.id, ...d.data(), createdAt: toDate(d.data().createdAt) }))); },
+        e => { clearTimeout(slow); $("#wall").innerHTML = `<div class="empty">Couldn't load messages</div>`; fail(e); });
     },
-    add(note){
-      if (!myUid) throw new Error("Posting isn't set up yet. Please try again later.");
-      return fs.addDoc(col, { ...note, uid: myUid, createdAt: fs.serverTimestamp() });
-    },
-    remove(id){ return fs.deleteDoc(fs.doc(db, "messages", id)); }
+    subscribeReplies(cb){ fs.onSnapshot(fs.collectionGroup(db, "replies"), s => cb(s.docs.map(fromSub)), fail); },
+    subscribeReactions(cb){ fs.onSnapshot(fs.collectionGroup(db, "reactions"), s => cb(s.docs.map(fromSub)), fail); },
+    addNote(note){ need(); return fs.addDoc(col, { ...note, uid: myUid, createdAt: fs.serverTimestamp() }); },
+    removeNote(id){ return fs.deleteDoc(fs.doc(db, "messages", id)); },
+    addReply(noteId, r){ need(); return fs.addDoc(fs.collection(db, "messages", noteId, "replies"), { ...r, uid: myUid, createdAt: fs.serverTimestamp() }); },
+    removeReply(noteId, id){ return fs.deleteDoc(fs.doc(db, "messages", noteId, "replies", id)); },
+    react(noteId, kind){ need(); return fs.setDoc(fs.doc(db, "messages", noteId, "reactions", `${myUid}_${kind}`), { uid: myUid, kind, createdAt: fs.serverTimestamp() }); },
+    unreact(noteId, kind){ return fs.deleteDoc(fs.doc(db, "messages", noteId, "reactions", `${myUid}_${kind}`)); }
   };
-} else {
+} else if (!firebaseConfig.apiKey) {
   if (!VIEW_ONLY) $("#demoBanner").hidden = false;
   // Preview mode: saves in this browser, or in memory if the browser blocks storage.
-  const KEY = "bday-card-notes"; let listener = () => {}, mem = [];
-  myUid = "preview"; // preview notes are all yours, so every note can be deleted
-  const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || mem; } catch { return mem; } };
-  const save = all => { mem = all; try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {} listener(); };
+  myUid = "preview";
+  const mem = {}, listeners = {};
+  const read = k => { try { return JSON.parse(localStorage.getItem(k)) || mem[k] || []; } catch { return mem[k] || []; } };
+  const save = (k, all) => { mem[k] = all; try { localStorage.setItem(k, JSON.stringify(all)); } catch {} (listeners[k] || (() => {}))(); };
+  const sub = (k, cb, fix = x => x) => { listeners[k] = () => cb(read(k).map(x => ({ ...fix(x), createdAt: new Date(x.createdAt) }))); listeners[k](); };
+  const N = "bday-card-notes", R = "bday-card-replies", X = "bday-card-reactions";
   store = {
-    subscribe(cb){ listener = () => cb(read().map(n => ({...n, uid: "preview", createdAt:new Date(n.createdAt)}))); listener(); },
-    async add(note){ const all = read(); all.unshift({ ...note, id: newId(), createdAt: Date.now() }); save(all); },
-    async remove(id){ save(read().filter(n => n.id !== id)); }
+    subscribeNotes(cb){ sub(N, cb, n => ({ ...n, uid: "preview" })); },
+    subscribeReplies(cb){ sub(R, cb); },
+    subscribeReactions(cb){ sub(X, cb); },
+    async addNote(note){ save(N, [{ ...note, id: newId(), createdAt: Date.now() }, ...read(N)]); },
+    async removeNote(id){ save(N, read(N).filter(n => n.id !== id)); },
+    async addReply(noteId, r){ save(R, [...read(R), { ...r, noteId, uid: myUid, id: newId(), createdAt: Date.now() }]); },
+    async removeReply(noteId, id){ save(R, read(R).filter(r => r.id !== id)); },
+    async react(noteId, kind){ save(X, [...read(X).filter(x => x.id !== `${noteId}_${kind}`), { id: `${noteId}_${kind}`, noteId, kind, uid: myUid, createdAt: Date.now() }]); },
+    async unreact(noteId, kind){ save(X, read(X).filter(x => x.id !== `${noteId}_${kind}`)); }
   };
 }
-if (VIEW_ONLY) myUid = null; // Michael never sees delete buttons
+
+// ---------- Small helpers ----------
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+// A button that asks "Tap again to delete" before running the action.
+function deleteButton(label, action){
+  const b = el("button", "del", label); b.type = "button";
+  b.onclick = async () => {
+    if (!b.classList.contains("confirm")) {
+      b.classList.add("confirm"); b.textContent = "Tap again to delete";
+      setTimeout(() => { if (b.isConnected && !b.disabled) { b.classList.remove("confirm"); b.textContent = label; } }, 4000);
+      return;
+    }
+    b.disabled = true; b.textContent = "Deleting…";
+    try { await action(); } catch (e) { console.error(e); b.disabled = false; b.classList.remove("confirm"); b.textContent = "Couldn't delete. Try again"; }
+  };
+  return b;
+}
 
 // ---------- Render the wall ----------
-function render(notes){
-  const wall = $("#wall"); wall.innerHTML = "";
-  $("#count").textContent = notes.length ? `${notes.length} ${notes.length === 1 ? "person has" : "people have"} signed` : "";
-  if (!notes.length) { wall.innerHTML = `<div class="empty">${VIEW_ONLY ? "Messages coming soon" : "Be the first to sign!"}</div>`; return; }
-  for (const n of notes) {
-    const el = document.createElement("article");
-    el.className = "note"; el.style.setProperty("--c", COLORS.includes(n.color) ? n.color : COLORS[0]);
-    if (n.photo && n.photo.startsWith("data:image/")) {
-      const img = document.createElement("img"); img.src = n.photo; img.alt = `Photo from ${n.name}`; img.loading = "lazy";
-      img.onclick = () => { $("#lightbox img").src = n.photo; $("#lightbox").showModal(); };
-      el.append(img);
-    }
-    if (n.message) { const p = document.createElement("p"); p.textContent = n.message; el.append(p); }
-    const from = document.createElement("div"); from.className = "from";
-    const a = document.createElement("span"); a.textContent = "— " + n.name;
-    const b = document.createElement("span"); b.textContent = n.createdAt.toLocaleDateString(undefined,{month:"short",day:"numeric"});
-    from.append(a,b); el.append(from);
-    if (myUid && n.uid === myUid) {
-      const del = document.createElement("button");
-      del.className = "del"; del.type = "button"; del.textContent = "Delete";
-      del.onclick = async () => {
-        if (!del.classList.contains("confirm")) {          // first tap asks, second tap deletes
-          del.classList.add("confirm"); del.textContent = "Tap again to delete";
-          setTimeout(() => { if (del.isConnected) { del.classList.remove("confirm"); del.textContent = "Delete"; } }, 4000);
-          return;
-        }
-        del.disabled = true; del.textContent = "Deleting…";
-        try { await store.remove(n.id); }
-        catch (e) { console.error(e); del.disabled = false; del.textContent = "Couldn't delete. Try again"; }
-      };
-      el.append(del);
-    }
-    wall.append(el);
+let notes = [], replies = [], reactions = [];
+const noteEls = new Map(), expanded = new Set();
+
+function buildNote(n){
+  const art = el("article", "note"); art.style.setProperty("--c", COLORS.includes(n.color) ? n.color : COLORS[0]);
+  if (n.photo && n.photo.startsWith("data:image/")) {
+    const img = el("img"); img.src = n.photo; img.alt = `Photo from ${n.name}`; img.loading = "lazy";
+    img.onclick = () => { $("#lightbox img").src = n.photo; $("#lightbox").showModal(); };
+    art.append(img);
   }
+  if (n.message) art.append(el("p", null, n.message));
+  const from = el("div", "from");
+  from.append(el("span", null, "— " + n.name), el("span", null, n.createdAt.toLocaleDateString(undefined,{month:"short",day:"numeric"})));
+  art.append(from);
+  if (!VIEW_ONLY && myUid && n.uid === myUid) art.append(deleteButton("Delete", () => store.removeNote(n.id)));
+
+  // Reactions + reply controls
+  const bar = el("div", "bar");
+  const rx = {};
+  for (const [kind, emoji] of REACTIONS) {
+    const b = el("button", "rx"); b.type = "button"; b.setAttribute("aria-label", `React ${emoji}`);
+    b.onclick = async () => {
+      if (!myUid) return;
+      const mine = b.classList.contains("on");
+      b.disabled = true;
+      try { mine ? await store.unreact(n.id, kind) : await store.react(n.id, kind); }
+      catch (e) { console.error(e); } finally { b.disabled = false; }
+    };
+    rx[kind] = b; bar.append(b);
+  }
+  const replyBtn = el("button", "link", "Reply"); replyBtn.type = "button";
+  bar.append(replyBtn);
+  art.append(bar);
+
+  const toggle = el("button", "link toggle"); toggle.type = "button";
+  toggle.onclick = () => { expanded.has(n.id) ? expanded.delete(n.id) : expanded.add(n.id); updateExtras(n.id); };
+  const list = el("div", "replies");
+
+  // Reply form (hidden until "Reply" is tapped)
+  const form = el("div", "reply-form"); form.hidden = true;
+  const nameIn = el("input"); nameIn.type = "text"; nameIn.maxLength = 60; nameIn.placeholder = "Your name";
+  if (VIEW_ONLY) nameIn.hidden = true;
+  const text = el("textarea"); text.maxLength = MAX_CHARS; text.placeholder = VIEW_ONLY ? "Reply as Michael…" : "Write a reply…";
+  const foot = el("div", "reply-foot");
+  const counter = el("span", "counter", `0 / ${MAX_WORDS} words`);
+  const send = el("button", "btn primary small", "Send"); send.type = "button";
+  const err = el("div", "err");
+  foot.append(counter, send);
+  form.append(nameIn, text, foot, err);
+  const countUp = () => { const w = wordCount(text.value); counter.textContent = `${w} / ${MAX_WORDS} words`; counter.classList.toggle("over", w > MAX_WORDS); };
+  text.oninput = countUp;
+  replyBtn.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { if (!nameIn.value) nameIn.value = lastName; expanded.add(n.id); updateExtras(n.id); (VIEW_ONLY || nameIn.value ? text : nameIn).focus(); } };
+  send.onclick = async () => {
+    err.textContent = "";
+    const name = VIEW_ONLY ? "Michael" : nameIn.value.trim(), t = text.value.trim();
+    if (!name) return err.textContent = "Please add your name.";
+    if (!t) return err.textContent = "Write a reply first.";
+    if (wordCount(t) > MAX_WORDS) return err.textContent = `Please keep it to ${MAX_WORDS} words.`;
+    send.disabled = true; send.textContent = "Sending…";
+    try {
+      await store.addReply(n.id, { name, text: t, fromMichael: VIEW_ONLY });
+      if (!VIEW_ONLY) rememberName(name);
+      text.value = ""; countUp(); form.hidden = true; expanded.add(n.id); updateExtras(n.id);
+    } catch (e) { console.error(e); err.textContent = /set up/.test(e.message || "") ? e.message : "Couldn't send. Please try again."; }
+    finally { send.disabled = false; send.textContent = "Send"; }
+  };
+  art.append(toggle, list, form);
+  return { art, rx, toggle, list };
 }
-store.subscribe(render);
+
+function updateExtras(id){
+  const parts = noteEls.get(id); if (!parts) return;
+  for (const [kind, emoji] of REACTIONS) {
+    const mine = reactions.filter(r => r.noteId === id && r.kind === kind);
+    const b = parts.rx[kind];
+    b.textContent = mine.length ? `${emoji} ${mine.length}` : emoji;
+    b.classList.toggle("on", mine.some(r => r.uid === myUid));
+  }
+  const rs = replies.filter(r => r.noteId === id).sort((a, b) => a.createdAt - b.createdAt);
+  const open = expanded.has(id);
+  parts.toggle.hidden = !rs.length;
+  parts.toggle.textContent = open ? "Hide replies" : `View ${rs.length} ${rs.length === 1 ? "reply" : "replies"}`;
+  parts.list.hidden = !open || !rs.length;
+  parts.list.replaceChildren(...rs.map(r => {
+    const row = el("div", "reply" + (r.fromMichael ? " michael" : ""));
+    const who = el("div", "who");
+    who.append(r.fromMichael ? el("span", "badge", "Michael") : el("strong", null, r.name));
+    row.append(who, el("div", "rtext", r.text));
+    if (myUid && r.uid === myUid) row.append(deleteButton("Delete", () => store.removeReply(id, r.id)));
+    return row;
+  }));
+}
+
+function renderNotes(){
+  const wall = $("#wall");
+  $("#count").textContent = notes.length ? `${notes.length} ${notes.length === 1 ? "person has" : "people have"} signed` : "";
+  if (!notes.length) { noteEls.clear(); wall.innerHTML = `<div class="empty">${VIEW_ONLY ? "Messages coming soon" : "Be the first to sign!"}</div>`; return; }
+  const ids = new Set(notes.map(n => n.id));
+  for (const id of [...noteEls.keys()]) if (!ids.has(id)) noteEls.delete(id);
+  // Reuse existing note elements so open reply boxes and typed text are kept.
+  wall.replaceChildren(...notes.map(n => {
+    if (!noteEls.has(n.id)) noteEls.set(n.id, buildNote(n));
+    updateExtras(n.id);
+    return noteEls.get(n.id).art;
+  }));
+}
+const refreshAll = () => noteEls.forEach((_, id) => updateExtras(id));
+
+if (store) {
+  store.subscribeNotes(list => { notes = list; renderNotes(); });
+  store.subscribeReplies(list => { replies = list; refreshAll(); });
+  store.subscribeReactions(list => { reactions = list; refreshAll(); });
+}
 
 // ---------- Form ----------
 $("#colors").innerHTML = COLORS.map((c,i) =>
@@ -277,13 +451,40 @@ $("#submit").onclick = async () => {
   const color = document.querySelector("input[name=color]:checked").value;
   $("#submit").disabled = true; $("#submit").textContent = "Posting…";
   try {
-    await store.add({ name, message, color, photo: photoData });
+    await store.addNote({ name, message, color, photo: photoData }); rememberName(name);
     $("#noteForm").reset(); photoData = "";
     $("#photoDrop").innerHTML = EMPTY_DROP;
     $("#formDialog").close(); burst();
   } catch (err) { console.error(err); $("#err").textContent = /storage|set up/.test(err.message || "") ? err.message : "Couldn't post — please try again."; }
   finally { $("#submit").disabled = false; $("#submit").textContent = "Post"; }
 };
+
+// ---------- Birthday song ----------
+// Checks whether song.m4a or song.mp3 exists next to this page. If yes, the speaker
+// button appears. Music never starts by itself: browsers only allow sound after a tap.
+(async () => {
+  let src = null;
+  for (const name of ["song.m4a", "song.mp3"]) {
+    try { const r = await fetch(name, { method: "HEAD", cache: "no-store" }); if (r.ok) { src = name; break; } } catch {}
+  }
+  if (!src) return;                                    // no file yet: keep everything hidden
+  const audio = new Audio(src); audio.preload = "none";
+  const btn = $("#soundBtn"), prompt = $("#soundPrompt");
+  const show = playing => {
+    btn.classList.toggle("playing", playing);
+    btn.setAttribute("aria-pressed", playing);
+    btn.setAttribute("aria-label", playing ? "Mute birthday song" : "Play birthday song");
+  };
+  const toggle = async () => {
+    prompt.hidden = true;
+    if (audio.paused) { try { await audio.play(); show(true); } catch (e) { console.error(e); } }
+    else { audio.pause(); show(false); }
+  };
+  btn.onclick = toggle; prompt.onclick = toggle;
+  audio.onended = () => { audio.currentTime = 0; show(false); };
+  if (VIEW_ONLY) prompt.hidden = false;                // gentle nudge on Michael's link
+  $("#sound").hidden = false;
+})();
 
 // ---------- Confetti ----------
 const cv = $("#confetti"), ctx = cv.getContext("2d"); let bits = [];
